@@ -7,6 +7,10 @@ using Tizen.TV.UIControls.Forms.Renderer;
 using Tizen.TV.Extension.UIControls.Forms.Renderer;
 using Tizen.TV.Multimedia;
 using TM = Tizen.Multimedia;
+using TVM = Tizen.TV.Multimedia;
+using System.Net;
+using System.IO;
+using Tizen.Multimedia;
 
 [assembly: Xamarin.Forms.Dependency(typeof(TVMediaPlayerImpl))]
 namespace Tizen.TV.Extension.UIControls.Forms.Renderer
@@ -15,16 +19,12 @@ namespace Tizen.TV.Extension.UIControls.Forms.Renderer
     {
         public TVMediaPlayerImpl()
         {
-            Tizen.Log.Error("XSF", "Etner");
 
         }
 
         protected override TM.Player CreateMediaPlayer()
         {
-            Tizen.Log.Error("XSF", "Etner");
-            return new Player();
+            return new TVM.Player();
         }
-
-
     }
 }

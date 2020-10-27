@@ -45,13 +45,13 @@ namespace Tizen.TV.UIControls.Forms
         /// <summary>
         /// Identifies the Volume bindable property.
         /// </summary>
-        public static readonly BindableProperty VolumeProperty = BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaPlayer), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1), propertyChanged: (b, o, n)=> ((MediaPlayer)b).OnVolumeChanged());
+        public static readonly BindableProperty VolumeProperty = BindableProperty.Create(nameof(Volume), typeof(double), typeof(MediaPlayer), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1), propertyChanged: (b, o, n) => ((MediaPlayer)b).OnVolumeChanged());
         /// <summary>
         /// Identifies the IsMuted bindable property.
         /// </summary>
         public static readonly BindableProperty IsMutedProperty = BindableProperty.Create(nameof(IsMuted), typeof(bool), typeof(MediaPlayer), false, propertyChanged: (b, o, n) => ((MediaPlayer)b).UpdateIsMuted());
         /// <summary>
-        /// Identifies the AspectMode bindable property.
+        /// Identifies the AspectMode bindable property.                                                                                                                                                                                                        
         /// </summary>
         public static readonly BindableProperty AspectModeProperty = BindableProperty.Create(nameof(AspectMode), typeof(DisplayAspectMode), typeof(MediaPlayer), DisplayAspectMode.AspectFit, propertyChanged: (b, o, n) => ((MediaPlayer)b).OnAspectModeChanged());
         /// <summary>
@@ -91,8 +91,14 @@ namespace Tizen.TV.UIControls.Forms
         /// Identifies the IsBuffering bindable property.
         /// </summary>
         public static readonly BindableProperty IsBufferingProperty = IsBufferingPropertyKey.BindableProperty;
+        /// <summary>
+        /// Identifies the IsMuted bindable property.
+        /// </summary>
+        public static readonly BindableProperty IsLoopingProperty = BindableProperty.Create(nameof(IsLooping), typeof(bool), typeof(MediaPlayer), false, propertyChanged: (b, o, n) => ((MediaPlayer)b).UpdateIsLooping());
 
-        protected IPlatformMediaPlayer _impl;
+
+
+        protected IPlatformMediaPlayer _impl;       
         bool _isPlaying;
         bool _controlsAlwaysVisible;
         CancellationTokenSource _hideTimerCTS = new CancellationTokenSource();
@@ -103,7 +109,7 @@ namespace Tizen.TV.UIControls.Forms
         /// </summary>
         public MediaPlayer()
         {
-            if(_impl == null)
+            if (_impl == null)
                 _impl = CreateMediaPlayerImpl();
             //_impl = DependencyService.Get<IPlatformMediaPlayer>(fetchTarget: DependencyFetchTarget.NewInstance);
             _impl.UpdateStreamInfo += OnUpdateStreamInfo;
@@ -112,12 +118,14 @@ namespace Tizen.TV.UIControls.Forms
             _impl.PlaybackPaused += SendPlaybackPaused;
             _impl.PlaybackStopped += SendPlaybackStopped;
             _impl.BufferingProgressUpdated += OnUpdateBufferingProgress;
+            _impl.ErrorOccurred += SendErrorOccurred;
+            //_impl.OnErrorOccured += Sen;
             _impl.UsesEmbeddingControls = true;
             _impl.Volume = 1d;
             _impl.AspectMode = DisplayAspectMode.AspectFit;
             _impl.AutoPlay = false;
             _impl.AutoStop = true;
-
+            _impl.IsLooping = false;
             _controlsAlwaysVisible = false;
             _controls = new Lazy<View>(() =>
             {
@@ -235,6 +243,15 @@ namespace Tizen.TV.UIControls.Forms
         }
 
         /// <summary>
+        /// Gets or sets the value whether the volume is muted.
+        /// </summary>
+        public bool IsLooping
+        {
+            get { return (bool)GetValue(IsLoopingProperty); }
+            set { SetValue(IsLoopingProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the desired interval time for updating position.
         /// </summary>
         public int PositionUpdateInterval
@@ -305,6 +322,10 @@ namespace Tizen.TV.UIControls.Forms
             }
         }
 
+        public void Test()
+        {
+            ErrorOccurred?.Invoke(this, EventArgs.Empty);
+        }
         /// <summary>
         /// For internal use.
         /// </summary>
@@ -382,6 +403,8 @@ namespace Tizen.TV.UIControls.Forms
         /// </summary>
         public event EventHandler BufferingCompleted;
 
+        public event EventHandler ErrorOccurred;
+
         /// <summary>
         /// Pauses the player.
         /// </summary>
@@ -418,7 +441,7 @@ namespace Tizen.TV.UIControls.Forms
             _impl.Stop();
         }
 
-        /// <summary>
+        /// <summary>z
         /// Retrieves the album art of the stream, or null if there is no album art data.
         /// </summary>
         /// <returns>Returns a Task that gets the album art of the stream</returns>
@@ -456,6 +479,11 @@ namespace Tizen.TV.UIControls.Forms
             _impl.IsMuted = IsMuted;
         }
 
+        void UpdateIsLooping()
+        {
+            _impl.IsLooping = IsLooping;
+        }
+
         void OnUpdateStreamInfo(object sender, EventArgs e)
         {
             Duration = _impl.Duration;
@@ -464,6 +492,11 @@ namespace Tizen.TV.UIControls.Forms
         void SendPlaybackCompleted(object sender, EventArgs e)
         {
             PlaybackCompleted?.Invoke(this, EventArgs.Empty);
+        }
+
+        void SendErrorOccurred(object sender, EventArgs e)
+        {
+            ErrorOccurred?.Invoke(this, EventArgs.Empty);
         }
 
         void SendPlaybackStarted(object sender, EventArgs e)
@@ -663,7 +696,7 @@ namespace Tizen.TV.UIControls.Forms
                 //Exception when canceled
             }
         }
-        
+
         void ShowController()
         {
             if (_controls.IsValueCreated)
@@ -684,4 +717,5 @@ namespace Tizen.TV.UIControls.Forms
             (bindable as MediaPlayer)?.OnSourceChanged(bindable, EventArgs.Empty);
         }
     }
+
 }

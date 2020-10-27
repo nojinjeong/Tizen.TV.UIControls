@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 using Xamarin.Forms;
 using Tizen.TV.UIControls.Forms;
+
 
 namespace Sample
 {
@@ -42,14 +38,17 @@ namespace Sample
                 }
             };
 
-            var player = new MediaPlayer
+            var player = new TVMediaPlayer
             {
+                IsLooping=true,
                 Source = "tvcm.mp4",
                 VideoOutput = this,
                 AutoPlay = true,
                 UsesEmbeddingControls = false,
             };
+
             label.SetBinding(Label.TextProperty, new Binding("Duration", source: player, stringFormat:"{0} duration"));
+            
         }
     }
 }

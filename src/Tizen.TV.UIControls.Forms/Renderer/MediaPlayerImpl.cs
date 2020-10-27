@@ -37,20 +37,20 @@ namespace Tizen.TV.UIControls.Forms.Renderer
         Task _taskPrepare;
         TaskCompletionSource<bool> _tcsForStreamInfo;
         IVideoOutput _videoOutput;
-        MediaSource _source;
+        protected MediaSource _source;
 
         public MediaPlayerImpl()
         {
-            if(_player == null)
+            if (_player == null)
                 _player = CreateMediaPlayer();
 
             _player.PlaybackCompleted += OnPlaybackCompleted;
             _player.BufferingProgressChanged += OnBufferingProgressChanged;
-            Tizen.Log.Error("XSF","Etner");
+            _player.ErrorOccurred += OnErrorOccurred;
         }
-
+        
         protected virtual Player CreateMediaPlayer()
-        {
+        {    
             return new Player();
         }
 
@@ -68,7 +68,11 @@ namespace Tizen.TV.UIControls.Forms.Renderer
             get => _player.Volume;
             set => _player.Volume = (float)value;
         }
-
+        public bool IsLooping
+        {
+            get => _player.IsLooping;
+            set => _player.IsLooping = (bool)value;
+        }
         public int Duration => _player.StreamInfo.GetDuration();
 
         public bool IsMuted
@@ -143,12 +147,9 @@ namespace Tizen.TV.UIControls.Forms.Renderer
         public event EventHandler<BufferingProgressUpdatedEventArgs> BufferingProgressUpdated;
         public event EventHandler PlaybackStopped;
         public event EventHandler PlaybackPaused;
-
-
+        public event EventHandler ErrorOccurred;
         public async Task<bool> Start()
         {
-            Log.Debug(UIControls.Tag, "Start");
-
             _cancelToStart = false;
             if (!HasSource)
                 return false;
@@ -167,7 +168,7 @@ namespace Tizen.TV.UIControls.Forms.Renderer
             }
             catch (Exception e)
             {
-                Log.Error(UIControls.Tag, $"Error On Start : {e.Message}");
+                //Log.Error(UIControls.Tag, $"Error On Start : {e.Message}");
                 return false;
             }
             PlaybackStarted?.Invoke(this, EventArgs.Empty);
@@ -263,6 +264,11 @@ namespace Tizen.TV.UIControls.Forms.Renderer
             return metadata;
         }
 
+        void OnErrorOccurred(object sender, PlayerErrorOccurredEventArgs e)
+        {
+            ErrorOccurred?.Invoke(this, EventArgs.Empty);
+        }
+
         void ApplyDisplay()
         {
             if (VideoOutput == null)
@@ -332,7 +338,7 @@ namespace Tizen.TV.UIControls.Forms.Renderer
             }
         }
 
-        async Task ApplySource()
+        public virtual async Task ApplySource()
         {
             if (_source == null)
             {
@@ -340,7 +346,7 @@ namespace Tizen.TV.UIControls.Forms.Renderer
             }
             IMediaSourceHandler handler = Registrar.Registered.GetHandlerForObject<IMediaSourceHandler>(_source);
             await handler.SetSource(_player, _source);
-        }
+       }
 
         async void OnTargetViewPropertyChanged(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -359,6 +365,7 @@ namespace Tizen.TV.UIControls.Forms.Renderer
 
         void OnOverlayAreaUpdated(object sender, EventArgs e)
         {
+
             ApplyOverlayArea();
         }
 
@@ -375,7 +382,8 @@ namespace Tizen.TV.UIControls.Forms.Renderer
             ApplyDisplay();
             await ApplySource();
 
-            try {
+            try
+            {
                 await _player.PrepareAsync();
                 UpdateStreamInfo?.Invoke(this, EventArgs.Empty);
                 _tcsForStreamInfo?.TrySetResult(true);

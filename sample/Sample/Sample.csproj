@@ -9,6 +9,7 @@
     <PackageReference Include="Xamarin.Forms" Version="4.4.0.991537" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Tizen.TV.Extension.UIControls.Forms\Tizen.TV.Extension.UIControls.Forms.csproj" />
     <ProjectReference Include="..\..\src\Tizen.TV.UIControls.Forms\Tizen.TV.UIControls.Forms.csproj" />
   </ItemGroup>
   <ItemGroup>

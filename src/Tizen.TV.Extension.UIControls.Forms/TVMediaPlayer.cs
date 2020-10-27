@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 using Tizen.TV.UIControls.Forms;
+using Tizen.TV.Extension.UIControls.Forms.Renderer;
 
 namespace Tizen.TV.Extension.UIControls.Forms
 {
@@ -33,11 +34,9 @@ namespace Tizen.TV.Extension.UIControls.Forms
     {
         public TVMediaPlayer() : base()
         {
-            Tizen.Log.Error("XSF", "Etner");
-            if(_impl == null)
+            if (_impl == null)
                 _impl = CreateMediaPlayerImpl();
-                //DependencyService.Get<ITVMediaPlayer>(fetchTarget: DependencyFetchTarget.NewInstance) as IPlatformMediaPlayer;
-            Tizen.Log.Error("XSF", "Etner");
+            //DependencyService.Get<ITVMediaPlayer>(fetchTarget: DependencyFetchTarget.NewInstance) as IPlatformMediaPlayer;
         }
 
         protected override IPlatformMediaPlayer CreateMediaPlayerImpl()
